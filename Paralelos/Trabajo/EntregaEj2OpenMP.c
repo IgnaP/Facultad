@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<omp.h>
+#include <omp.h>
 #include <sys/time.h>
 
 int tamanio;
@@ -41,16 +41,16 @@ int main(int argc,char*argv[]){
 	omp_set_num_threads(cantThreads);
 	timetick = dwalltime();
 
-	int total=0;
+	int pares=0;
 	#pragma omp parallel for shared(arreglo) private(i)
 	for(i=0;i<tamanio;i++){
 		if ((arreglo[i] % 2)==0){
 			#pragma omp critical
-			total++;
+			pares++;
 		}   
 	}
 
-	printf("Aparece: %i veces\n", total);
+	printf("Pares: %i\n", pares);
 	printf("Tiempo en segundos %f \n", dwalltime() - timetick);
 	return 0;
 }

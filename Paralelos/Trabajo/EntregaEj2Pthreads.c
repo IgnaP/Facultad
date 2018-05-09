@@ -28,17 +28,17 @@ void * llenarArreglo (){
 }
 void * hilo (void * ptr){
 	int id=*((int *)ptr);
-	int total=0;
+	int pares=0;
 	int i;
 	int desde=id*(tamanio/cantThreads);
 	int hasta=desde+(tamanio/cantThreads);
 
 	for (i=desde;i<hasta;i++){
 		if ((arreglo[i] % 2)==0){
-			total++;
+			pares++;
 		}
 	}
-	resultados[id]=total;
+	resultados[id]=pares;
 	pthread_exit(0);
 }
 int main(int argc,char*argv[]){
@@ -71,11 +71,11 @@ int main(int argc,char*argv[]){
 	}
 
 	/* Suma todo */
-	int total=0;
+	int pares=0;
 	for (i=0;i<cantThreads;i++){
-		total=total+resultados[i];
+		pares=pares+resultados[i];
 	}
-	printf("Aparece: %i veces\n", total);
+	printf("Pares: %i\n", pares);
 	printf("Tiempo en segundos %f \n", dwalltime() - timetick);
 	return 0;
 }
