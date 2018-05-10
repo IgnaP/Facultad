@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-int tamanio;
-int *arreglo;
+unsigned long long int tamanio;
+unsigned long long int *arreglo;
 
 double dwalltime()
 {
@@ -16,7 +16,7 @@ double dwalltime()
 }
 
 void * llenarArreglo (){
-	int i;
+	unsigned long long int i;
 	for (i=0;i<tamanio;i++){
 		arreglo[i]=2;
 
@@ -25,25 +25,25 @@ void * llenarArreglo (){
 	//printf("\n");
 }
 int main(int argc,char*argv[]){
-	tamanio=atoi(argv[1]);
+	tamanio=atoll(argv[1]);
 	double timetick;
 
-	printf("Tamaño del arreglo: %i\n", tamanio);
+	//printf("Tamaño del arreglo: %i\n", tamanio);
 
-	int i;
-	arreglo=(int*)malloc(sizeof(int)*tamanio);
+	unsigned long long int i;
+	arreglo=(unsigned long long int*)malloc(sizeof(unsigned long long int)*tamanio);
 	llenarArreglo();
 
 	timetick = dwalltime();
 
-	int pares=0;
+	unsigned long long int pares=0;
 	for(i=0;i<tamanio;i++){
 		if ((arreglo[i] % 2)==0){
 			pares++;
 		}   
 	}
 
-	printf("Pares: %i\n", pares);
+	printf("Pares: %lld\n", pares);
 	printf("Tiempo en segundos %f \n", dwalltime() - timetick);
 	return 0;
 }
