@@ -39,10 +39,7 @@ int main(int argc,char* argv[]){
  LBD=(double*)malloc(sizeof(double)*N*N);
 
  //Inicializa las matrices
- //La matriz A se inicializa todas las columnas en 0 menos la ultima
- //La matriz BT se inicializa triangular inferior con 1
- //Esto permite que el resultado sean todos 1
- //La matriz C se inicializa en 0
+ //LT matriz triangular inferior
  for(i=0;i<N;i++){
   for(j=0;j<N;j++){
     A[i*N+j]=1; 
@@ -59,7 +56,7 @@ int main(int argc,char* argv[]){
     }else{
      LT[i+N*j]=0; 
     }
-    printf("matriz triangular, valor en %d : %f\n", i+N*j, LT[i+N*j]); 
+    //printf("matriz triangular, valor en %d : %f\n", i+N*j, LT[i+N*j]); 
   }
  }
 
@@ -99,7 +96,7 @@ promB= sumab/(N*N);
 //Multiplico escalar por cada matriz y sumo
 for (i=0; i<N; i++){
   for (j = 0; j < N; j++){
-    M[i*N+j] = promL*ABC[i*N+j] + promB*LBD[i*N+j];
+    //M[i*N+j] = promL*ABC[i*N+j] + promB*LBD[i*N+j];
     printf("valor matriz m en %d : %f\n", i*N+j, M[i*N+j]);
   }
 }
