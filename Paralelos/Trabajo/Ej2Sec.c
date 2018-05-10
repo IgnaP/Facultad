@@ -20,9 +20,9 @@ void * llenarArreglo (){
 	for (i=0;i<tamanio;i++){
 		arreglo[i]=2;
 
-		printf(" %i ", arreglo[i]);
+	//	printf(" %i ", arreglo[i]);
 	}
-	printf("\n");
+	//printf("\n");
 }
 int main(int argc,char*argv[]){
 	tamanio=atoi(argv[1]);
