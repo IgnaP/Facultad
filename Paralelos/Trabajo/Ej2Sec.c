@@ -3,7 +3,7 @@
 #include <sys/time.h>
 #include <math.h>
 
-int tamanio=pow(2,30);
+int tamanio;
 int *arreglo;
 
 double dwalltime()
@@ -26,7 +26,7 @@ void * llenarArreglo (){
 	//printf("\n");
 }
 int main(int argc,char*argv[]){
-	//tamanio=atoll(argv[1]);
+	tamanio=atoi(argv[1]);
 	double timetick;
 
 	printf("Tamaño del arreglo: %i\n", tamanio);
