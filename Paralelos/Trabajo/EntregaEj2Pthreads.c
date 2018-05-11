@@ -3,10 +3,10 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-int tamanio;
+unsigned long long int tamanio;
 int cantThreads;
-int *arreglo;
-int *resultados;
+unsigned long long int *arreglo;
+unsigned long long int *resultados;
 
 double dwalltime()
 {
@@ -18,20 +18,20 @@ double dwalltime()
 	return sec;
 }
 void * llenarArreglo (){
-	int i;
+	unsigned long long int i;
 	for (i=0;i<tamanio;i++){
 		arreglo[i]=2;
 
-		printf(" %i ", arreglo[i]);
+	//	printf(" %i ", arreglo[i]);
 	}
-	printf("\n");
+	//printf("\n");
 }
 void * hilo (void * ptr){
 	int id=*((int *)ptr);
-	int pares=0;
-	int i;
-	int desde=id*(tamanio/cantThreads);
-	int hasta=desde+(tamanio/cantThreads);
+	unsigned long long int pares=0;
+	unsigned long long int i;
+	unsigned long long int desde=id*(tamanio/cantThreads);
+	unsigned long long int hasta=desde+(tamanio/cantThreads);
 
 	for (i=desde;i<hasta;i++){
 		if ((arreglo[i] % 2)==0){
@@ -46,15 +46,16 @@ int main(int argc,char*argv[]){
 	tamanio=atoi(argv[2]);
 
 	printf("Threads: %i\n", cantThreads);
-	printf("Tamaño: %i\n", tamanio);
+	printf("Tamaño: %lld\n", tamanio);
 
-	int i, ids[cantThreads];
+	int ids[cantThreads];
+	unsigned long long int i;
 	pthread_attr_t attr;
 	pthread_t threads[cantThreads];
 	pthread_attr_init(&attr);
 	
-	arreglo=(int*)malloc(sizeof(int)*tamanio);
-	resultados=(int*)malloc(sizeof(int)*cantThreads);
+	arreglo=(unsigned long long int*)malloc(sizeof(unsigned long long int)*tamanio);
+	resultados=(unsigned long long int*)malloc(sizeof(unsigned long long int)*cantThreads);
 
 	llenarArreglo();
 	double timetick= dwalltime();
@@ -71,11 +72,11 @@ int main(int argc,char*argv[]){
 	}
 
 	/* Suma todo */
-	int pares=0;
+	unsigned long long int pares=0;
 	for (i=0;i<cantThreads;i++){
 		pares=pares+resultados[i];
 	}
-	printf("Pares: %i\n", pares);
+	printf("Pares: %lld\n", pares);
 	printf("Tiempo en segundos %f \n", dwalltime() - timetick);
 	return 0;
 }

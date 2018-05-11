@@ -28,7 +28,7 @@ int main(int argc,char*argv[]){
 	tamanio=atoll(argv[1]);
 	double timetick;
 
-	//printf("Tamaño del arreglo: %i\n", tamanio);
+	printf("Tamaño del arreglo: %lld\n", tamanio);
 
 	unsigned long long int i;
 	arreglo=(unsigned long long int*)malloc(sizeof(unsigned long long int)*tamanio);

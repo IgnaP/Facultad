@@ -3,9 +3,9 @@
 #include <omp.h>
 #include <sys/time.h>
 
-int tamanio;
+unsigned long long int tamanio;
 int cantThreads;
-int *arreglo;
+unsigned long long int *arreglo;
 
 double dwalltime()
 {
@@ -18,13 +18,13 @@ double dwalltime()
 }
 
 void * llenarArreglo (){
-	int i;
+	unsigned long long int i;
 	for (i=0;i<tamanio;i++){
 		arreglo[i]=2;
 
-		printf(" %i ", arreglo[i]);
+	//	printf(" %i ", arreglo[i]);
 	}
-	printf("\n");
+	//printf("\n");
 }
 int main(int argc,char*argv[]){
 	cantThreads=atoi(argv[1]);
@@ -32,16 +32,16 @@ int main(int argc,char*argv[]){
 	double timetick;
 
 	printf("Threads: %i\n", cantThreads);
-	printf("Tamaño del arreglo: %i\n", tamanio);
+	printf("Tamaño del arreglo: %lld\n", tamanio);
 
-	int i;
-	arreglo=(int*)malloc(sizeof(int)*tamanio);
+	unsigned long long int i;
+	arreglo=(unsigned long long int*)malloc(sizeof(unsigned long long int)*tamanio);
 	llenarArreglo();
 
 	omp_set_num_threads(cantThreads);
 	timetick = dwalltime();
 
-	int pares=0;
+	unsigned long long int pares=0;
 	#pragma omp parallel for shared(arreglo) private(i)
 	for(i=0;i<tamanio;i++){
 		if ((arreglo[i] % 2)==0){
@@ -50,7 +50,7 @@ int main(int argc,char*argv[]){
 		}   
 	}
 
-	printf("Pares: %i\n", pares);
+	printf("Pares: %lld\n", pares);
 	printf("Tiempo en segundos %f \n", dwalltime() - timetick);
 	return 0;
 }
