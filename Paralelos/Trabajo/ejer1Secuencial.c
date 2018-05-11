@@ -19,6 +19,7 @@ int main(int argc,char* argv[]){
  int i,j,k;
  int check = 1;
  double timetick;
+ int cantTriangular;
 
  //Controla los argumentos al programa
  if ((argc != 2) || ((N = atoi(argv[1])) <= 0) ) {
@@ -26,6 +27,8 @@ int main(int argc,char* argv[]){
     exit(1);
   }
  
+ cantTriangular = N*(N+1)/2;
+
  //Aloca memoria para las matrices
  A=(double*)malloc(sizeof(double)*N*N);
  B=(double*)malloc(sizeof(double)*N*N);
@@ -39,7 +42,6 @@ int main(int argc,char* argv[]){
  LBD=(double*)malloc(sizeof(double)*N*N);
 
  //Inicializa las matrices
- //LT matriz triangular inferior
  for(i=0;i<N;i++){
   for(j=0;j<N;j++){
     A[i*N+j]=1; 
@@ -56,9 +58,15 @@ int main(int argc,char* argv[]){
     }else{
      LT[i+N*j]=0; 
     }
-    //printf("matriz triangular, valor en %d : %f\n", i+N*j, LT[i+N*j]); 
+
+    printf("matriz triangular, valor en %d : %f\n", i+N*j, LT[i+N*j]); 
   }
  }
+
+ /*for (i = 0; i < cantTriangular; i++)
+ {
+   L[i] = 1;
+ }*/
 
  //Realiza la multiplicacion 
  timetick = dwalltime();
@@ -67,8 +75,18 @@ for(i=0;i<N;i++){
   for(j=0;j<N;j++){
    for(k=0;k<N;k++){
     AB[i*N+j]=AB[i*N+j] + A[i*N+k]*B[k+j*N];
-    LB[i*N+j]=LB[i*N+j] + LT[i*N+k]*B[k+j*N];
    }
+  }
+}
+
+//multiplicación matriz triangular
+for (i = 0; i < N; i++){
+  for (j = 0; j < N; j++){
+    for (k = 0; k <= i; k++){
+      //printf("zona matriz triangular %d\n", i*N+k);
+      //printf("zona matriz comun: %d\n", k+N*j);
+    }
+    //printf("fin bucle k\n");
   }
 }
 
@@ -76,8 +94,11 @@ for(i=0;i<N;i++){
   for(j=0;j<N;j++){
    for(k=0;k<N;k++){
     ABC[i*N+j]=ABC[i*N+j] + AB[i*N+k]*C[k+j*N];
+    //printf("A %d\n", i*N+k);
+    printf("B %d\n", k+j*N);
     LBD[i*N+j]=LBD[i*N+j] + LB[i*N+k]*D[k+j*N];
    }
+   printf("fin k\n");
   }
 }
 
@@ -96,8 +117,8 @@ promB= sumab/(N*N);
 //Multiplico escalar por cada matriz y sumo
 for (i=0; i<N; i++){
   for (j = 0; j < N; j++){
-    //M[i*N+j] = promL*ABC[i*N+j] + promB*LBD[i*N+j];
-    printf("valor matriz m en %d : %f\n", i*N+j, M[i*N+j]);
+    M[i*N+j] = promL*ABC[i*N+j] + promB*LBD[i*N+j];
+    //printf("valor matriz m en %d : %f\n", i*N+j, M[i*N+j]);
   }
 }
 
