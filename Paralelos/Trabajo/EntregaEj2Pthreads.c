@@ -43,7 +43,7 @@ void * hilo (void * ptr){
 }
 int main(int argc,char*argv[]){
 	cantThreads=atoi(argv[1]);
-	tamanio=atoi(argv[2]);
+	tamanio=atoll(argv[2]);
 
 	printf("Threads: %i\n", cantThreads);
 	printf("Tamaño: %lld\n", tamanio);

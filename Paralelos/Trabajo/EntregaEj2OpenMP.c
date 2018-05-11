@@ -28,7 +28,7 @@ void * llenarArreglo (){
 }
 int main(int argc,char*argv[]){
 	cantThreads=atoi(argv[1]);
-	tamanio=atoi(argv[2]);
+	tamanio=atoll(argv[2]);
 	double timetick;
 
 	printf("Threads: %i\n", cantThreads);
