@@ -4,8 +4,11 @@
 #include <sys/time.h>
 #include <math.h>
 
+//gcc -pthread -o PRUEBAPthreads PRUEBAPthreads.c -lm
+
+int elevado=27;
 int tamanio;
-int cantThreads;
+int cantThreads=2;
 int *arreglo;
 int *resultados;
 
@@ -22,10 +25,7 @@ void * llenarArreglo (){
 	int i;
 	for (i=0;i<tamanio;i++){
 		arreglo[i]=2;
-
-	//	printf(" %i ", arreglo[i]);
 	}
-	//printf("\n");
 }
 void * hilo (void * ptr){
 	int id=*((int *)ptr);
@@ -43,25 +43,23 @@ void * hilo (void * ptr){
 	pthread_exit(0);
 }
 int main(int argc,char*argv[]){
-	cantThreads=atoi(argv[1]);
-	tamanio=atoll(argv[2]);
-	//tamanio=pow(2,29);
-
-	printf("Threads: %i\n", cantThreads);
-	printf("Tamaño: %i\n", tamanio);
-
+	double tiempoTotal;
+	int i,j,k;
 	int ids[cantThreads];
-	int i;
 	pthread_attr_t attr;
 	pthread_t threads[cantThreads];
 	pthread_attr_init(&attr);
-	
-	arreglo=(int*)malloc(sizeof(int)*tamanio);
+	printf("Threads: %i\n", cantThreads);
 	resultados=(int*)malloc(sizeof(int)*cantThreads);
+  for(k=0;k<3;k++){
+    tiempoTotal=0;
+    tamanio= pow(2,elevado);
+    printf("Tamaño del arreglo: 2 a la %i (%i)\n", elevado,tamanio);
+    arreglo=(int*)malloc(sizeof(int)*tamanio);
+    llenarArreglo();
 
-	llenarArreglo();
+    for (j=0;j<5;j++){
 	double timetick= dwalltime();
-
 	/* Crea los hilos */
 	for (i=0;i<cantThreads;i++){
 		ids[i]=i;
@@ -78,7 +76,11 @@ int main(int argc,char*argv[]){
 	for (i=0;i<cantThreads;i++){
 		pares=pares+resultados[i];
 	}
-	printf("Pares: %i\n", pares);
-	printf("Tiempo en segundos %f \n", dwalltime() - timetick);
-	return 0;
+	tiempoTotal=tiempoTotal+(dwalltime() - timetick);
+    }
+
+    printf("Tiempo promedio %f \n", tiempoTotal/5);
+    elevado++;
+  }
+  return 0;
 }
