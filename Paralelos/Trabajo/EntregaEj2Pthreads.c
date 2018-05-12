@@ -52,9 +52,7 @@ int main(int argc,char*argv[]){
 
 	int ids[cantThreads];
 	int i;
-	pthread_attr_t attr;
 	pthread_t threads[cantThreads];
-	pthread_attr_init(&attr);
 	
 	arreglo=(int*)malloc(sizeof(int)*tamanio);
 	resultados=(int*)malloc(sizeof(int)*cantThreads);
