@@ -121,11 +121,11 @@ tiempoFinal = dwalltime() - timetick;
 
 
 //Imprimo matriz
-for (int i = 0; i < N; i++){
+/*for (int i = 0; i < N; i++){
   for (int j = 0; j < N; j++){
     printf("valor matriz m en %d : %f\n", i*N+j, M[i*N+j]);
   }
-}
+}*/
 
 //printf("promedio matriz B: %f\n", promB);
 
