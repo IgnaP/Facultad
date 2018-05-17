@@ -42,10 +42,9 @@ int main(int argc,char*argv[]){
 	timetick = dwalltime();
 
 	int pares=0;
-	#pragma omp parallel for shared(arreglo) private(i)
+	#pragma omp parallel for shared(arreglo) private(i) reduction(:+pares)
 	for(i=0;i<tamanio;i++){
 		if ((arreglo[i] % 2)==0){
-			#pragma omp critical
 			pares++;
 		}   
 	}
