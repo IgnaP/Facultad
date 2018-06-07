@@ -47,9 +47,10 @@ int main(int argc, char* argv[]){
 
 	double start_time = dwalltime();
 
+	int code;
+	int queen_rows[MAX_N];
 	for (iter = 0; iter < max_iter; iter++){
-		int code = iter;
-		int queen_rows[MAX_N];
+		code = iter;
 		// the index correspond to the queen's number and the queen's collumn
 		// we only generate configurations where there's only one queen per collumn
 		for (i = 0; i < n; i++){
@@ -60,9 +61,8 @@ int main(int argc, char* argv[]){
 			number_solutions++;
 		}
 	}
-	// print results
-	printf("The execution time is %g sec\n", dwalltime() - start_time);
-	printf("Number of found solutions is %d\n", number_solutions);
+	printf("Tiempo: %g segundos\n", dwalltime() - start_time);
+	printf("Soluciones: %d\n", number_solutions);
 	MPI_Finalize();
 	return 0;
 }
