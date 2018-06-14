@@ -1,6 +1,6 @@
 /*
 <------  N-Queens Solutions  -----> <---- time ---->
- N:           Total          Unique days hh:mm:ss.--
+ N:           Total          Unique days hh:mm:ss.--			Nuestro tiempo
  5:              10               2             0.00
  6:               4               1             0.00
  7:              40               6             0.00
@@ -8,59 +8,32 @@
  9:             352              46             0.00
 10:             724              92             0.00
 11:            2680             341             0.00
-12:           14200            1787             0.00
+12:           14200            1787             0.00			0.33305 segundos
 13:           73712            9233             0.02
 14:          365596           45752             0.05
 15:         2279184          285053             0.22
-16:        14772512         1846955             1.47
+16:        14772512         1846955             1.47			571.474 segundos
 17:        95815104        11977939             9.42
 18:       666090624        83263591          1:11.21
 19:      4968057848       621012754          8:32.54
-20:     39029188884      4878666808       1:10:55.48
-21:    314666222712     39333324973       9:24:40.50
-
 */
 
 #include <stdlib.h>
 #include <stdio.h>
-
-/* Checking information */
-static int solutions[] = {
-        0,
-        0,
-        0,
-        0,
-        0, /* 5 */
-        0,
-        0,
-        0,
-        0,
-        0, /* 10 */
-        0,
-        0,
-        0,
-        0,
-        0, /* 15 */
-        0,
-        0,
-        0
-};
+#include <sys/time.h>
 #define MAX_SOLUTIONS sizeof(solutions)/sizeof(int)
 
 #ifndef _NQUEENS_H_
 #define _NQUEENS_H_
-
-int ok(int queen_number, int row_position, int* position);
-int put_queen(int size, int queen_number, int* position);
-void nqueens(int size, int threads, int *solutions);
-int find_queens(int size, int threads);
-
 #endif /* _NQUEENS_H_ */
 
-#define N 5
-#define THREADS 1
-
-int total_count;
+double dwalltime(){
+	double sec;
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	sec = tv.tv_sec + tv.tv_usec/1000000.0;
+	return sec;
+}
 
 int ok(int queen_number, int row_position, int* position) {
 	int i;
@@ -93,7 +66,7 @@ int put_queen(int size, int queen_number, int* position) {
 	return 0;
 }
 
-void nqueens(int size, int threads, int *solutions) {
+void nqueens(int size, int *solutions) {
 	int i, count;
 	int* position;
 
@@ -127,35 +100,21 @@ void nqueens(int size, int threads, int *solutions) {
 	*solutions = count;
 }
 
-int find_queens(int size, int threads) {
-	total_count=0;
-	nqueens(size, threads, &total_count);
+int find_queens(int size) {
+	int total_count=0;
+	nqueens(size, &total_count);
 	return total_count;
 }
 
-long wtime();
-
 int main(int argc, char** argv) {
-	int size = N, threads = THREADS;
-	long start_time, end_time;
+	int size;
 
 	if(argc > 1)
 		size = atoi(argv[1]);
 
-	if(argc > 2)
-		threads = atoi(argv[2]);
+	double start_time = dwalltime();
+	int solutions = find_queens(size);
 
-	start_time = wtime();
-	int solutions = find_queens(size, threads);
-	end_time = wtime();
-
-	printf("Nqueens openmp_parallel;size: %d;threads: %d;cut_off: 0;time: %ld;solutions: %d\n",
-			 size, threads, (long) (end_time - start_time), solutions);
-}
-
-/* wtime */
-long wtime() {
-   struct timeval t;
-   gettimeofday(&t, NULL);
-   return t.tv_sec*1000000 + t.tv_usec;
+	printf("Tiempo: %g segundos\n", dwalltime() - start_time);
+	printf("Soluciones: %d\n", solutions);
 }
