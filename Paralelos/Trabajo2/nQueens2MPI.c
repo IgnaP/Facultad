@@ -112,13 +112,14 @@ int find_queens(int size) {
 
 int master(){
 	int soluciones=0;
+	int tareas;
 	//Asignar primera tarea
 	for (rank = 1; rank < ntasks; ++rank) {
 		MPI_Recv(&id, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &estado);
 		MPI_Send(&work, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
 	}
 	//Mientras haya tareas
-	while(false){
+	while(tareas>0){
 	//Trabajar
 	//int solutions = find_queens(size);
 	//Checkear por pedidos
@@ -132,10 +133,12 @@ void slave(int id){
 	//Pedir primera tarea
 	MPI_Send(&id,1,MPI_INT,0,1,MPI_COMM_WORLD);
 	MPI_Recv(&tarea,1,MPI_INT,0,1,MPI_COMM_WORLD,&estado);
-	//Trabajar
-	while(tarea!=0){
+	while(tarea>0){
+		//Trabajar
 		//int solutions = find_queens(size);
+		//Enviar resultados
 		MPI_Send(&soluciones,1,MPI_INT,0,1,MPI_COMM_WORLD);
+		//Pedir siguiente tarea
 		MPI_Recv(&tarea,1,MPI_INT,0,1,MPI_COMM_WORLD,&estado);
 	}
 }
