@@ -22,15 +22,6 @@ double dwalltime(){
         return sec;
 }
 
-void * TEST(void * ptr){
-  int * p, id;
-  int desde, hasta;
-  p = (int *) ptr; //lo casteo a entero
-  id = *p; //*p se accede al valor apuntado
-printf("ID: %i\n",id);
-pthread_exit(NULL);
-}
-
 void multiplicarAB (int desde, int hasta, int id){
   int i, j, k;
   printf("estoy en multiplicar AB\n");
@@ -189,8 +180,7 @@ timetick = dwalltime();
 
 for (i = 0; i < THREADS; i++){
   ids[i] = i;
-  pthread_create(&threads[i], NULL, TEST, &ids[i]);
-  //pthread_create(&threads[i], NULL, calculosMatrices, &ids[i]);
+  pthread_create(&threads[i], NULL, calculosMatrices, &ids[i]);
 	printf("id: %i\n",ids[i]);
 }
 
@@ -255,7 +245,7 @@ void * calculosMatrices(void * ptr){
   multiplicarConTriangular(desde, hasta, id);
   pthread_barrier_wait(&BARRERA);
   multiplicarABC(desde, hasta, id);
- multiplicarLBD(desde, hasta, id);
+  multiplicarLBD(desde, hasta, id);
   pthread_barrier_wait(&BARRERA);
   promedio(desde, hasta, id);
   pthread_barrier_wait(&BARRERA);
