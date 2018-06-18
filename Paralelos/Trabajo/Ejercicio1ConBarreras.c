@@ -3,7 +3,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 
-int N, THREADS, PASOS, cantThreads;
+int N, THREADS, PASOS, cantThreads, PASOSTRIANGULAR;
 double *A,*B,*C,*D,*LT,*M,*AB,*ABC,*LB,*LBD, *RESULTL, *RESULTB, promL, promB, totalL, totalB;
 pthread_barrier_t BARRERA;
 pthread_mutex_t mutex;
@@ -22,6 +22,25 @@ double dwalltime(){
         return sec;
 }
 
+/*void imprimirMatriz(double * matriz){
+  int i,j;
+  for (i = 0; i < N; ++i){
+    for (j = 0; j < N; ++j){
+        printf("%f |", matriz[i*N+j]);
+    }
+    printf("\n");
+  }
+}
+void imprimirMatrizColumna(double * matriz){
+  int i,j;
+  for (i = 0; i < N; ++i){
+    for (j = 0; j < N; ++j){
+        printf("%f |", matriz[i+N*j]);
+    }
+    printf("\n");
+  }
+}*/
+
 void multiplicarAB (int desde, int hasta, int id){
   int i, j, k;
   printf("estoy en multiplicar AB\n");
@@ -33,8 +52,7 @@ void multiplicarAB (int desde, int hasta, int id){
       }
     }
   }
-
-  printf("sali de multiplicar AB\n");
+  //printf("sali de multiplicar AB\n");
 }
 
 
@@ -45,12 +63,12 @@ void multiplicarConTriangular (int desde, int hasta, int id){
   for (int i=desde; i < hasta; i++){
     for (int j = 0; j <= i; j++){
       indiceTriangular = j+(i*(i+1)/2);
-      for (int k = 0; k < hasta; k++){
+      for (int k = 0; k < N; k++){
         LB[i*N+k] = LB[i*N+k] + LT[indiceTriangular]*B[k+j*N];
       }
     }
   }
-  //printf("sali de multiplicar AB\n");
+  //printf("sali de multiplicar LB\n");
 }
 
 void multiplicarABC (int desde, int hasta, int id){
@@ -73,7 +91,7 @@ void multiplicarLBD (int desde, int hasta, int id){
     }
   }
 }
-void promedio (int desde, int hasta, int id){
+void promedio (int desde, int hasta, int desdeTr, int hastaTr, int id){
   printf("Estoy con el hilo %d calculando promedio \n", id);
   int sumal=0;
   int sumab=0;
@@ -83,19 +101,19 @@ void promedio (int desde, int hasta, int id){
       sumab += B[i*N+j];
     }
   }
-  for (i = 0; i < cantTriangular; i++){
-	sumal = sumal + LT[i]; //sumando valores triangular
+  printf("Estoy con el hilo %d en sumar valores triangular. Desde %d, hasta %d\n", id, desdeTr, hastaTr);
+  for (i = desdeTr; i < hastaTr; i++){
+    sumal = sumal + LT[i]; //sumando valores triangular
   }
-  printf("Sali de sumar");
   pthread_mutex_lock(&mutex);
-  printf("estoy con el mutex");
-  totalL += sumal;
   totalB += sumab;
+  totalL += sumal;
   cantThreads++;
   if (cantThreads == THREADS){ //El último hilo que llegue va a realizar el promedio final
-    printf("Soy el último hilo con id %d \n", id);
+    printf("Soy el último hilo con id %d calculando promedio final \n", id);
     promL = totalL/(N*N);
     promB = totalB/(N*N);
+    cantThreads = 0;
   }
   pthread_mutex_unlock(&mutex);
 }
@@ -164,6 +182,7 @@ for (i = 0; i < cantTriangular; i++){
 }
 
 PASOS = N/THREADS;
+PASOSTRIANGULAR = cantTriangular/THREADS;
 
 totalL = 0.0;
 totalB = 0.0;
@@ -183,15 +202,6 @@ for (i = 0; i < THREADS; i++){
   pthread_create(&threads[i], NULL, calculosMatrices, &ids[i]);
   //printf("id: %i\n",ids[i]);
 }
-
-/*sumo el total para promedio
-
-for (i = 0; i < THREADS; i++){
-  totalL += RESULTL[i];
-  totalB += RESULTB[i];
-}
-promL = totalL/(N*N);
-promB = totalB/(N*N);*/
 
 for(i=0; i < THREADS; i++){
   pthread_join(threads[i], NULL);
@@ -240,6 +250,8 @@ void * calculosMatrices(void * ptr){
   id = *p; //*p se accede al valor apuntado
   desde = PASOS*id;
   hasta = (id+1)*PASOS;
+  int desdeTr = PASOSTRIANGULAR*id;
+  int hastaTr = (id+1)*PASOSTRIANGULAR;
   multiplicarAB(desde, hasta, id);
   pthread_barrier_wait(&BARRERA);
   multiplicarConTriangular(desde, hasta, id);
@@ -247,7 +259,7 @@ void * calculosMatrices(void * ptr){
   multiplicarABC(desde, hasta, id);
   multiplicarLBD(desde, hasta, id);
   pthread_barrier_wait(&BARRERA);
-  promedio(desde, hasta, id);
+  promedio(desde, hasta, desdeTr, hastaTr, id);
   pthread_barrier_wait(&BARRERA);
   multEscalarYSuma(desde, hasta, id);
   pthread_exit(NULL);
