@@ -10,6 +10,8 @@ pthread_mutex_t mutex;
 
 void * calculosMatrices (void * ptr);
 
+int cantTriangular;
+
 //Para calcular tiempo
 double dwalltime(){
         double sec;
@@ -20,6 +22,14 @@ double dwalltime(){
         return sec;
 }
 
+void * TEST(void * ptr){
+  int * p, id;
+  int desde, hasta;
+  p = (int *) ptr; //lo casteo a entero
+  id = *p; //*p se accede al valor apuntado
+printf("ID: %i\n",id);
+pthread_exit(NULL);
+}
 
 void multiplicarAB (int desde, int hasta, int id){
   int i, j, k;
@@ -29,12 +39,13 @@ void multiplicarAB (int desde, int hasta, int id){
     for (j = 0; j < N; j++){
       for (k = 0; k < N; k++){
         AB[i*N+j]=AB[i*N+j] + A[i*N+k]*B[k+j*N];
-        LB[i*N+j]=LB[i*N+j] + LT[i*N+k]*B[k+j*N];
       }
     }
   }
+
   printf("sali de multiplicar AB\n");
 }
+
 
 void multiplicarConTriangular (int desde, int hasta, int id){
   int indiceTriangular;
@@ -51,27 +62,38 @@ void multiplicarConTriangular (int desde, int hasta, int id){
   //printf("sali de multiplicar AB\n");
 }
 
-void multiplicarABCyLBD (int desde, int hasta, int id){
+void multiplicarABC (int desde, int hasta, int id){
   printf("Estoy con el hilo %d en multiplicar ABC. Desde %d, hasta %d\n", id, desde, hasta);
   for (int i=desde; i < hasta; i++){
     for (int j = 0; j < N; j++){
       for (int k = 0; k < N; k++){
         ABC[i*N+j]=ABC[i*N+j] + AB[i*N+k]*C[k+j*N];
+      }
+    }
+  }
+}
+void multiplicarLBD (int desde, int hasta, int id){
+  printf("Estoy con el hilo %d en multiplicar LBD. Desde %d, hasta %d\n", id, desde, hasta);
+  for (int i=desde; i < hasta; i++){
+    for (int j = 0; j < N; j++){
+      for (int k = 0; k < N; k++){
         LBD[i*N+j]=LBD[i*N+j] + LB[i*N+k]*D[k+j*N];
       }
     }
   }
 }
-
 void promedio (int desde, int hasta, int id){
-  printf("Estoy con el hilo %d\n calculando promedio \n", id);
+  printf("Estoy con el hilo %d calculando promedio \n", id);
   int sumal=0;
   int sumab=0;
-  for (int i=desde; i< hasta; i++){
-    for (int j = 0; j < N; j++){
-      sumal = sumal + LT[i*N+j];
-      sumab = sumab + B[i*N+j];
+  int i,j;
+  for (i=desde;i<hasta; i++){
+    for (j = 0; j < N; j++){
+      sumab += B[i*N+j];
     }
+  }
+  for (i = 0; i < cantTriangular; i++){
+	sumal = sumal + LT[i]; //sumando valores triangular
   }
   printf("Sali de sumar");
   pthread_mutex_lock(&mutex);
@@ -88,7 +110,7 @@ void promedio (int desde, int hasta, int id){
 }
 
 void multEscalarYSuma (int desde, int hasta, int id){
-  printf("Estoy con el hilo %d\n multiplicando escalar \n", id);
+  printf("Estoy con el hilo %d multiplicando escalar \n", id);
   for (int i=desde; i<hasta; i++){
     for (int j = 0; j < N; j++){
       M[i*N+j] = promL*ABC[i*N+j] + promB*LBD[i*N+j];
@@ -98,7 +120,7 @@ void multEscalarYSuma (int desde, int hasta, int id){
 
 int main(int argc,char* argv[]){
  //double sumab, sumal;
- int i,j,k, ids[THREADS];
+ int i,j,k;
  int check = 1;
  double timetick, tiempo;
  pthread_t threads[THREADS];
@@ -109,11 +131,12 @@ int main(int argc,char* argv[]){
     printf("h: numero de threads\n");
     exit(1);
  }
+int ids[THREADS];
 
  printf("N %d\n", N);
  printf("threads: %d\n", THREADS );
  
- int cantTriangular = N*(N+1)/2;
+ cantTriangular = N*(N+1)/2;
 
  //Aloca memoria para las matrices
  A=(double*)malloc(sizeof(double)*N*N);
@@ -166,7 +189,9 @@ timetick = dwalltime();
 
 for (i = 0; i < THREADS; i++){
   ids[i] = i;
-  pthread_create(&threads[i], NULL, &calculosMatrices, &ids[i]);
+  pthread_create(&threads[i], NULL, TEST, &ids[i]);
+  //pthread_create(&threads[i], NULL, calculosMatrices, &ids[i]);
+	printf("id: %i\n",ids[i]);
 }
 
 /*sumo el total para promedio
@@ -229,7 +254,8 @@ void * calculosMatrices(void * ptr){
   pthread_barrier_wait(&BARRERA);
   multiplicarConTriangular(desde, hasta, id);
   pthread_barrier_wait(&BARRERA);
-  multiplicarABCyLBD(desde, hasta, id);
+  multiplicarABC(desde, hasta, id);
+ multiplicarLBD(desde, hasta, id);
   pthread_barrier_wait(&BARRERA);
   promedio(desde, hasta, id);
   pthread_barrier_wait(&BARRERA);
