@@ -181,7 +181,7 @@ timetick = dwalltime();
 for (i = 0; i < THREADS; i++){
   ids[i] = i;
   pthread_create(&threads[i], NULL, calculosMatrices, &ids[i]);
-	printf("id: %i\n",ids[i]);
+  //printf("id: %i\n",ids[i]);
 }
 
 /*sumo el total para promedio
