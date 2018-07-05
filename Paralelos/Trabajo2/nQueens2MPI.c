@@ -69,11 +69,11 @@ int put_queen(int size, int queen_number, int* position) {
 	return 0;
 }
 
-void nqueens(int size, int *solutions) {
-	int i, count;
+int nqueens(int size, int i) {
+	int count=0;
 	int* position;
 	count = 0;
-	for(i=0; i<size; i++) {
+	//for(i=0; i<size; i++) {
 		int j;
 		position = (int *) malloc(size * sizeof(int));
 		position[0] = i;
@@ -94,30 +94,36 @@ void nqueens(int size, int *solutions) {
 				queen_number--;
 			}
 		}
-	}
-	*solutions = count;
+	//}
+	return count;
 }
-
+/*
 int find_queens(int size,int pos) {
 	int total_count=0;
 	nqueens(size, &total_count);
 	return total_count;
 }
-
-int master(int slaves,int size){
+*/
+int master(int slaves,int size, MPI_Status estado){
 	int resp,x;
 	int soluciones=0;
 	int i=0;
+	int sinTrabajo = 0; 
 	//Asignar primera tarea
 	for (x=0; x<slaves; ++x) {
 		MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &estado);
 		MPI_Send(&i, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
-		i++;
+		if (i<size && i>=0){
+			i++;
+		}else{
+			i=-999;
+			sinTrabajo++;
+		}
 	}
 	//Mientras haya tareas
 	while(i<size){ //estas van a ser las tareas, el indice i es lo que le voy a pasar al hilo worker 
 		//Trabaja
-		soluciones +=find_queens(size,i);
+		soluciones +=nqueens(size, i);
 		i++;
 		//Pedidos
 		MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
@@ -128,24 +134,25 @@ int master(int slaves,int size){
 			i++;
 			MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
 		}
+
 	}
 	//Cancelar resto de pedidos
 	int terminar= -999;
-	for (int x=0; x<slaves; ++x) {
+	for (int x=sinTrabajo; x<slaves; ++x) {
 		MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		soluciones +=resp;
 		MPI_Send(&terminar, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
 	}
 	return soluciones;
 }
-void slave(int id){
+void slave(int id,MPI_Status estado){
 	int soluciones,tarea;
 	//Pedir primera tarea
 	MPI_Send(&id,1,MPI_INT,0,1,MPI_COMM_WORLD);
 	MPI_Recv(&tarea,1,MPI_INT,0,1,MPI_COMM_WORLD,&estado);
 	while(tarea>0){
 		//Trabajar
-		soluciones = find_queens(size,tarea);
+		soluciones = nqueens(size, tarea);
 		//Enviar resultados
 		MPI_Send(&soluciones,1,MPI_INT,0,1,MPI_COMM_WORLD);
 		//Pedir siguiente tarea
@@ -153,9 +160,7 @@ void slave(int id){
 	}
 }
 int main(int argc, char** argv) {
-	int size;
-	int soluciones=0;
-
+	int size,soluciones;
 	if(argc > 1)
 		size = atoi(argv[1]);
 
@@ -166,10 +171,10 @@ int main(int argc, char** argv) {
 	MPI_Status estado;
 
 	double start_time = dwalltime();
-	if (myrank == 0) {
-		soluciones=master();
+	if (identificador == 0) {
+		soluciones=master(cantidad,size,estado);
 	} else {
-		slave(&identificador);
+		slave(&identificador,estado);
 	}
 	MPI_Finalize();
 	printf("Tiempo: %g segundos\n", dwalltime() - start_time);
