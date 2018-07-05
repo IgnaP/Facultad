@@ -109,12 +109,15 @@ int master(int slaves,int size, MPI_Status estado){
 	int soluciones=0;
 	int i=0;
 	int sinTrabajo = 0; 
+	int flag;
 	//Asignar primera tarea
-	for (x=0; x<slaves; ++x) {
+	printf("empecé, master\n");
+	for (x=0; x<slaves-1; ++x) {
 		MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &estado);
-		MPI_Send(&i, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
+		MPI_Send(&i, 1, MPI_INT, estado.MPI_SOURCE, 1, MPI_COMM_WORLD);
 		if (i<size && i>=0){
 			i++;
+			printf("i: %d\n",i);
 		}else{
 			i=-999;
 			sinTrabajo++;
@@ -122,34 +125,45 @@ int master(int slaves,int size, MPI_Status estado){
 	}
 	//Mientras haya tareas
 	while(i<size){ //estas van a ser las tareas, el indice i es lo que le voy a pasar al hilo worker 
+		//Pedidos
+		MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &estado);
+		while(flag && i<size){	//flag = true si tengo pedidos
+			MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
+			soluciones +=resp;
+			MPI_Send(&i, 1, MPI_INT, estado.MPI_SOURCE, 1, MPI_COMM_WORLD);
+			i++;
+			MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &estado);
+		}
 		//Trabaja
+		if(i<size){
+		printf("Trabaja master\n");
 		soluciones +=nqueens(size, i);
 		i++;
-		//Pedidos
-		MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
-		while(flag && i<size){	//flag = true si tengo pedidos
-			MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			soluciones +=resp;
-			MPI_Send(&i, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
-			i++;
-			MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
 		}
 
 	}
 	//Cancelar resto de pedidos
 	int terminar= -999;
-	for (int x=sinTrabajo; x<slaves; ++x) {
-		MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+	printf("No hay mas pedidos.\n i:%i sinTrabajo: %i\n",i,sinTrabajo);
+	for (x=sinTrabajo; x<slaves-1; x++) {
+		printf("hago recive\n");
+		MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
+		printf("x: %i\n", x);
 		soluciones +=resp;
-		MPI_Send(&terminar, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
+		printf("hago el send\n");
+		MPI_Send(&terminar, 1, MPI_INT, estado.MPI_SOURCE, 1, MPI_COMM_WORLD);	
 	}
+	printf("Terminé master \n");
+	printf("slave: %d \n",slaves);
 	return soluciones;
 }
-void slave(int id,MPI_Status estado){
+void slave(int id, MPI_Status estado, int size){
 	int soluciones,tarea;
+	double start_time = dwalltime();
 	//Pedir primera tarea
 	MPI_Send(&id,1,MPI_INT,0,1,MPI_COMM_WORLD);
 	MPI_Recv(&tarea,1,MPI_INT,0,1,MPI_COMM_WORLD,&estado);
+	printf("empezando a trabajar slave\n");
 	while(tarea>0){
 		//Trabajar
 		soluciones = nqueens(size, tarea);
@@ -158,6 +172,7 @@ void slave(int id,MPI_Status estado){
 		//Pedir siguiente tarea
 		MPI_Recv(&tarea,1,MPI_INT,0,1,MPI_COMM_WORLD,&estado);
 	}
+	printf("Tiempo: %g segundos de hilo worker %i\n", dwalltime() - start_time, id);
 }
 int main(int argc, char** argv) {
 	int size,soluciones;
@@ -172,12 +187,13 @@ int main(int argc, char** argv) {
 
 	double start_time = dwalltime();
 	if (identificador == 0) {
+		printf("soy master\n");
 		soluciones=master(cantidad,size,estado);
+		printf("Tiempo: %g segundos\n", dwalltime() - start_time);
+		printf("Soluciones: %d\n", soluciones);
 	} else {
-		slave(&identificador,estado);
+		printf("soy slave\n");
+		slave(identificador,estado, size);
 	}
 	MPI_Finalize();
-	printf("Tiempo: %g segundos\n", dwalltime() - start_time);
-	printf("Soluciones: %d\n", soluciones);
 }
-
