@@ -18,6 +18,7 @@
 19:      4968057848       621012754          8:32.54
 mpicc -o NqueensMPI NqueensMPI.c
 mpirun -np 4 NqueensMPI 4
+mpirun -np 4 –machinefile archivoMaquinas NqueensMPI 4
 */
 
 #include <stdlib.h>
