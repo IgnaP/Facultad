@@ -16,7 +16,8 @@
 17:        95815104        11977939             9.42
 18:       666090624        83263591          1:11.21
 19:      4968057848       621012754          8:32.54
-mpicc -o nQueens2MPI nQueens2MPI.c
+mpicc -o NqueensMPI NqueensMPI.c
+mpirun -np 4 NqueensMPI 4
 */
 
 #include <stdlib.h>
