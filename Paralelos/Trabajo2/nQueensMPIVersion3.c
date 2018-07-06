@@ -131,10 +131,10 @@ int master(int slaves,int size, MPI_Status estado){
 				MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
 				if(resp != -1){
 					soluciones +=resp;
-					trabajando--;
+					//trabajando--;
 				}
 				MPI_Send(&i, 1, MPI_INT, estado.MPI_SOURCE, 0, MPI_COMM_WORLD);
-				trabajando++;
+				//trabajando++;
 				i++;
 			}else{
 				//Trabaja master
@@ -149,11 +149,14 @@ int master(int slaves,int size, MPI_Status estado){
 	//Cancelar resto de pedidos
 	int terminar= -99;
 	printf("No hay mas pedidos.\n i:%i sinTrabajo: %i\n",i,sinTrabajo);
-	for (x=0; x<trabajando; x++) {
+	for (x=0; x<slaves; x++) {
 		printf("hago recive\n");
 		MPI_Recv(&resp, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
 		printf("x: %i\n", x);
-		soluciones +=resp;
+		if(resp != -1){ //Si es -1 es porque nunca pudo trabajar, porque son muchos hilos o porque les ganó el master
+			soluciones +=resp;
+		}
+
 		printf("hago el send\n");
 		MPI_Send(&terminar, 1, MPI_INT, estado.MPI_SOURCE, 0, MPI_COMM_WORLD);	
 	}
