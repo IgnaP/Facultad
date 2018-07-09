@@ -99,6 +99,8 @@ int nqueens(int size, int i) {
 }
 int master(int slaves,int size, MPI_Status estado){
 	int resp,x;
+	double tiempo,min,max,tiempoTotal,start_time;
+	double tiempoMaster=0;
 	int soluciones=0;
 	int i=0;
 	int flag=0;
@@ -115,11 +117,16 @@ int master(int slaves,int size, MPI_Status estado){
 			i++;
 		}else{	//Trabaja master
 			if(i<size){
+				start_time = dwalltime();
 				soluciones +=nqueens(size, i);
+				tiempoMaster+=dwalltime() - start_time;
 				i++;
 			}	
 		}
 	}
+	tiempoTotal=tiempoMaster;
+	min=tiempoMaster;
+	max=tiempoMaster;
 	//Cancelar resto de pedidos
 	int terminar= -99;
 	for (x=0; x<slaves; x++) {
@@ -127,13 +134,25 @@ int master(int slaves,int size, MPI_Status estado){
 		if(resp != -1){ //Si es -1 es porque nunca pudo trabajar, porque son muchos hilos o porque les ganó el master
 			soluciones +=resp;
 		}
-		MPI_Send(&terminar, 1, MPI_INT, estado.MPI_SOURCE, 0, MPI_COMM_WORLD);	
+		MPI_Send(&terminar, 1, MPI_INT, estado.MPI_SOURCE, 0, MPI_COMM_WORLD);
+		MPI_Recv(&tiempo, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
+		if(tiempo<min){
+			min =tiempo;
+		}
+		if(tiempo>max){
+			max =tiempo;
+		}
+		tiempoTotal+=tiempo;
 	}
+	printf("Tiempo minimo: %g segundos \n", min);
+	printf("Tiempo maximo: %g segundos \n", max);
+	printf("Tiempo promedio: %g segundos \n", tiempoTotal/(slaves+1));
 	return soluciones;
 }
 void slave(int id, MPI_Status estado, int size){
 	int soluciones,tarea;
 	double start_time = dwalltime();
+	double end_time;
 	//Pedir primera tarea
 	tarea = -1;
 	MPI_Send(&tarea,1,MPI_INT,0,0,MPI_COMM_WORLD);
@@ -146,7 +165,9 @@ void slave(int id, MPI_Status estado, int size){
 		//Pedir siguiente tarea
 		MPI_Recv(&tarea,1,MPI_INT,0,0,MPI_COMM_WORLD,&estado);
 	}
-	printf("Tiempo: %g segundos de hilo worker %i\n", dwalltime() - start_time, id);
+	end_time=dwalltime() - start_time;
+	MPI_Send(&end_time,1,MPI_INT,0,0,MPI_COMM_WORLD);
+	printf("Tiempo: %g segundos de hilo worker %i\n", end_time, id);
 }
 int main(int argc, char** argv) {
 	int size,soluciones;
