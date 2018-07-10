@@ -135,7 +135,7 @@ int master(int slaves,int size, MPI_Status estado){
 			soluciones +=resp;
 		}
 		MPI_Send(&terminar, 1, MPI_INT, estado.MPI_SOURCE, 0, MPI_COMM_WORLD);
-		MPI_Recv(&tiempo, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
+		//MPI_Recv(&tiempo, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
 		if(tiempo<min){
 			min =tiempo;
 		}
@@ -151,23 +151,24 @@ int master(int slaves,int size, MPI_Status estado){
 }
 void slave(int id, MPI_Status estado, int size){
 	int soluciones,tarea;
-	double start_time = dwalltime();
-	double end_time;
+    double tiempo=0;
+	double start_time;
 	//Pedir primera tarea
 	tarea = -1;
 	MPI_Send(&tarea,1,MPI_INT,0,0,MPI_COMM_WORLD);
 	MPI_Recv(&tarea,1,MPI_INT,0,0,MPI_COMM_WORLD,&estado);
 	while(tarea>=0){
 		//Trabajar
+        start_time = dwalltime();
 		soluciones = nqueens(size, tarea);
+        tiempo+= dwalltime() - start_time;
 		//Enviar resultados
 		MPI_Send(&soluciones,1,MPI_INT,0,0,MPI_COMM_WORLD);
 		//Pedir siguiente tarea
 		MPI_Recv(&tarea,1,MPI_INT,0,0,MPI_COMM_WORLD,&estado);
 	}
-	end_time=dwalltime() - start_time;
-	MPI_Send(&end_time,1,MPI_INT,0,0,MPI_COMM_WORLD);
-	printf("Tiempo: %g segundos de hilo worker %i\n", end_time, id);
+	//MPI_Send(&tiempo,1,MPI_DOUBLE,0,0,MPI_COMM_WORLD);
+	printf("Tiempo: %g segundos de hilo worker %i\n", tiempo, id);
 }
 int main(int argc, char** argv) {
 	int size,soluciones;
@@ -196,3 +197,4 @@ int main(int argc, char** argv) {
 	MPI_Finalize();
 	return 0;
 }
+
