@@ -8,7 +8,7 @@
 
 int elevado=27;
 int tamanio;
-int cantThreads=2;
+int cantThreads=4;
 int *arreglo;
 int *resultados;
 
@@ -45,6 +45,7 @@ void * hilo (void * ptr){
 int main(int argc,char*argv[]){
 	double tiempoTotal;
 	int i,j,k;
+	cantThreads=atoi(argv[1]);
 	int ids[cantThreads];
 	pthread_attr_t attr;
 	pthread_t threads[cantThreads];
@@ -84,3 +85,4 @@ int main(int argc,char*argv[]){
   }
   return 0;
 }
+

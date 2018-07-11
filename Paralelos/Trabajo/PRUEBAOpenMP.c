@@ -6,7 +6,7 @@
 
 int elevado=27;
 int tamanio;
-int cantThreads=2;
+int cantThreads=4;
 int *arreglo;
 
 double dwalltime()
@@ -28,6 +28,7 @@ void * llenarArreglo (){
 int main(int argc,char*argv[]){
 	double timetick,tiempoTotal;
 	int i,j,k,pares;
+	cantThreads=atoi(argv[1]);
 	omp_set_num_threads(cantThreads);
 	printf("Threads: %i\n", cantThreads);
   for(k=0;k<3;k++){
@@ -39,10 +40,9 @@ int main(int argc,char*argv[]){
      for (j=0;j<5;j++){
 	timetick = dwalltime();
 	pares=0;
-	#pragma omp parallel for shared(arreglo) private(i)
+	#pragma omp parallel for shared(arreglo) private(i) reduction(+:pares)
 	for(i=0;i<tamanio;i++){
 		if ((arreglo[i] % 2)==0){
-			#pragma omp critical
 			pares++;
 		}   
 	}
@@ -53,3 +53,4 @@ int main(int argc,char*argv[]){
   }
 	return 0;
 }
+
